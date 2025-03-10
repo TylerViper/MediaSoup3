@@ -21110,16 +21110,21 @@ const log = (message) => {
   logArea.value += message + '\n';
   logArea.scrollTop = logArea.scrollHeight;
 };
-
 const getLocalStream = async () => {
   log("getLocalStream");
   try {
+    // Request permissions to access the camera and microphone
+    await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
     const devices = await navigator.mediaDevices.enumerateDevices();
+    log("Devices: " + JSON.stringify(devices));
+    
     let rearCameraId = null;
     let frontCameraId = null;
 
     devices.forEach(device => {
       if (device.kind === 'videoinput') {
+        log("Device label: " + device.label);
         if (device.label.toLowerCase().includes('back') || device.label.toLowerCase().includes('rear')) {
           rearCameraId = device.deviceId;
         } else if (device.label.toLowerCase().includes('front')) {
@@ -21128,13 +21133,14 @@ const getLocalStream = async () => {
       }
     });
 
+    log("rearCameraId: " + rearCameraId);
+    log("frontCameraId: " + frontCameraId);
+
     let videoStream = null;
 
     const isPhone = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
     log("isPhone: " + isPhone);
-    log("rearCameraId: " + rearCameraId);
-    log("frontCameraId: " + frontCameraId);
     log("======================");
     
     if (isPhone && rearCameraId) {
@@ -21143,7 +21149,7 @@ const getLocalStream = async () => {
         video: { deviceId: rearCameraId },
         audio: true
       });
-    } else {
+    } else if (navigator.mediaDevices.getDisplayMedia) {
       log("Using display media");
       videoStream = await navigator.mediaDevices.getDisplayMedia({
         video: {
@@ -21156,6 +21162,12 @@ const getLocalStream = async () => {
         },
         audio: false
       });
+    } else {
+      log("Using front camera");
+      videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { deviceId: frontCameraId },
+        audio: true
+      });
     }
 
     log("Stream obtained: " + videoStream);
@@ -21164,7 +21176,6 @@ const getLocalStream = async () => {
     log("Error getting local stream: " + error.message);
   }
 }
-
 const streamSuccess = (stream) => {
   localVideo.srcObject = stream;
   log("Stream: " + stream);
