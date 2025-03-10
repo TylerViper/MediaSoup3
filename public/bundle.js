@@ -21104,29 +21104,15 @@ const joinRoom = () => {
   })
 }
 
+const logArea = document.getElementById('logArea');
 
-const streamSuccess = (stream) => {
-  localVideo.srcObject = stream
-  console.log(stream)
-  console.log('Stream tracks:', stream.getTracks());
-
-  if (stream.getAudioTracks().length > 0) {
-    audioParams = { track: stream.getAudioTracks()[0], ...audioParams };
-  } else {
-    console.warn('No audio track available');
-  }
-
-  if (stream.getVideoTracks().length > 0) {
-    videoParams = { track: stream.getVideoTracks()[0], ...videoParams };
-  } else {
-    console.warn('No video track available');
-  }
-
-  joinRoom()
-}
+const log = (message) => {
+  logArea.value += message + '\n';
+  logArea.scrollTop = logArea.scrollHeight;
+};
 
 const getLocalStream = async () => {
-  console.log("getLocalStream")
+  log("getLocalStream");
   try {
     const devices = await navigator.mediaDevices.enumerateDevices();
     let rearCameraId = null;
@@ -21146,19 +21132,19 @@ const getLocalStream = async () => {
 
     const isPhone = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    console.log("isPhone:")
-    console.log(isPhone)
-    console.log("rearCameraId:")
-    console.log(rearCameraId)
-    console.log("frontCameraId:")
-    console.log(frontCameraId)
-    console.log("======================")
+    log("isPhone: " + isPhone);
+    log("rearCameraId: " + rearCameraId);
+    log("frontCameraId: " + frontCameraId);
+    log("======================");
+    
     if (isPhone && rearCameraId) {
+      log("Using rear camera");
       videoStream = await navigator.mediaDevices.getUserMedia({
         video: { deviceId: rearCameraId },
         audio: true
       });
     } else {
+      log("Using display media");
       videoStream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           width: {
@@ -21172,11 +21158,34 @@ const getLocalStream = async () => {
       });
     }
 
+    log("Stream obtained: " + videoStream);
     streamSuccess(videoStream);
   } catch (error) {
-    console.log(error.message);
+    log("Error getting local stream: " + error.message);
   }
 }
+
+const streamSuccess = (stream) => {
+  localVideo.srcObject = stream;
+  log("Stream: " + stream);
+  log('Stream tracks: ' + stream.getTracks());
+
+  if (stream.getAudioTracks().length > 0) {
+    audioParams = { track: stream.getAudioTracks()[0], ...audioParams };
+  } else {
+    log('No audio track available');
+  }
+
+  if (stream.getVideoTracks().length > 0) {
+    videoParams = { track: stream.getVideoTracks()[0], ...videoParams };
+  } else {
+    log('No video track available');
+  }
+
+  joinRoom();
+}
+
+document.getElementById('btnLocalVideo').addEventListener('click', getLocalStream);
 
 // OG CODE WHICH WORKS
 // const getLocalStream = () => {
