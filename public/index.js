@@ -8,6 +8,7 @@ const socket = io("/mediasoup")
 
 socket.on('connection-success', ({ socketId }) => {
   console.log(socketId)
+  log(socketId)
   // getLocalStream()
 })
 
@@ -54,6 +55,7 @@ let consumingTransports = [];
 const joinRoom = () => {
   socket.emit('joinRoom', { roomName }, (data) => {
     console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`)
+    log(`Router RTP Capabilities... ${data.rtpCapabilities}`)
     // we assign to local variable and will be used when
     // loading the client Device (see createDevice above)
     rtpCapabilities = data.rtpCapabilities
@@ -198,14 +200,17 @@ const createDevice = async () => {
     })
 
     console.log('Device RTP Capabilities', device.rtpCapabilities)
+    log('Device RTP Capabilities', device.rtpCapabilities)
 
     // once the device loads, create transport
     createSendTransport()
 
   } catch (error) {
     console.log(error)
+    log(error)
     if (error.name === 'UnsupportedError')
       console.warn('browser not supported')
+      log('browser not supported')
   }
 }
 
@@ -217,10 +222,13 @@ const createSendTransport = () => {
     // to create Send Transport on the client side
     if (params.error) {
       console.log(params.error)
+      log(params.error)
       return
     }
     console.log(`createWebRtcTransport`)
+    log(`createWebRtcTransport`)
     console.log(params)
+    log(params)
 
     // creates a new WebRTC Transport to send media
     // based on the server's producer transport params
@@ -253,7 +261,9 @@ const createSendTransport = () => {
 
     producerTransport.on('produce', async (parameters, callback, errback) => {
       console.log('Producer Transport Produce')
+      log('Producer Transport Produce')
       console.log(parameters)
+      log(parameters)
 
       try {
         // tell the server to create a Producer
@@ -304,12 +314,14 @@ const connectSendTransport = async () => {
   
   videoProducer.on('trackended', () => {
     console.log('video track ended')
+    log('video track ended')
 
     // close video track
   })
 
   videoProducer.on('transportclose', () => {
     console.log('video transport ended')
+    log('video transport ended')
 
     // close video track
   })
@@ -317,7 +329,9 @@ const connectSendTransport = async () => {
 
 const signalNewConsumerTransport = async (remoteProducerId) => {
   console.log("signalNewConsumerTransport")
+  log("signalNewConsumerTransport")
   console.log(remoteProducerId)
+  log(remoteProducerId)
 
   //check if we are already consuming the remoteProducerId
   if (consumingTransports.includes(remoteProducerId)) return;
@@ -328,10 +342,13 @@ const signalNewConsumerTransport = async (remoteProducerId) => {
     // to create Send Transport on the client side
     if (params.error) {
       console.log(params.error)
+      log(params.error)
       return
     }
     console.log(`createWebRtcTransport2...`)
+    log(`createWebRtcTransport2...`)
     console.log(params)
+    log(params)
 
     let consumerTransport
     try {
@@ -347,6 +364,7 @@ const signalNewConsumerTransport = async (remoteProducerId) => {
       // {InvalidStateError} if not loaded
       // {TypeError} if wrong arguments.
       console.log(error)
+      log(error)
       return
     }
 
@@ -377,6 +395,7 @@ socket.on('new-producer', ({ producerId }) => signalNewConsumerTransport(produce
 const getProducers = () => {
   socket.emit('getProducers', producerIds => {
     console.log(producerIds)
+    log(producerIds)
     // for each of the producer create a consumer
     // producerIds.forEach(id => signalNewConsumerTransport(id))
     producerIds.forEach(signalNewConsumerTransport)
@@ -394,11 +413,14 @@ const connectRecvTransport = async (consumerTransport, remoteProducerId, serverC
   }, async ({ params }) => {
     if (params.error) {
       console.log('Cannot Consume')
+      log('Cannot Consume')
       return
     }
 
     console.log(`Consumer Params`)
+    log(`Consumer Params`)
     console.log(params)
+    log(params)
     // then consume with the local consumer transport
     // which creates a consumer
     const consumer = await consumerTransport.consume({
