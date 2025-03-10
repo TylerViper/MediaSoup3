@@ -69,6 +69,7 @@ const log = (message) => {
   logArea.value += message + '\n';
   logArea.scrollTop = logArea.scrollHeight;
 };
+
 const getLocalStream = async () => {
   log("getLocalStream");
   try {
@@ -108,31 +109,39 @@ const getLocalStream = async () => {
         video: { deviceId: rearCameraId },
         audio: true
       });
-    } else if (navigator.mediaDevices.getDisplayMedia) {
-      log("Using display media");
-      videoStream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          width: {
-            max: 1920,
-          },
-          height: {
-            max: 1080,
-          }
-        },
-        audio: false
-      });
+    } else if(isPhone && frontCameraId) {
+        log("Using front camera");
+        videoStream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: frontCameraId },
+          audio: true
+        });
     } else {
-      log("Using front camera");
-      videoStream = await navigator.mediaDevices.getUserMedia({
-        video: { deviceId: frontCameraId },
-        audio: true
-      });
+      log("No media stream found");
+      return;
     }
 
     log("Stream obtained: " + videoStream);
-    streamSuccess(videoStream);
+    return streamSuccess(videoStream);
   } catch (error) {
-    log("Error getting local stream: " + error.message);
+    log("Error getLocalStream 1: " + error.message);
+  }
+
+  try {
+    log("Using display media");
+    videoStream = await navigator.mediaDevices.getDisplayMedia({
+      video: {
+        width: {
+          max: 1920,
+        },
+        height: {
+          max: 1080,
+        }
+      },
+      audio: false
+    });
+    return streamSuccess(videoStream);
+  } catch (error) {
+    log("Error getLocalStream 2: " + error.message);
   }
 }
 const streamSuccess = (stream) => {
