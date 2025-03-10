@@ -21471,6 +21471,9 @@ const connectRecvTransport = async (consumerTransport, remoteProducerId, serverC
       rtpParameters: params.rtpParameters
     })
 
+    console.log('Consumer Codec:', consumer.rtpParameters.codecs)
+    log('Consumer Codec:', consumer.rtpParameters.codecs)
+
     consumerTransports = [
       ...consumerTransports,
       {
@@ -21489,9 +21492,8 @@ const connectRecvTransport = async (consumerTransport, remoteProducerId, serverC
       //append to the audio container
       newElem.innerHTML = '<audio id="' + remoteProducerId + '" autoplay></audio>'
     } else {
-      //append to the video container
       newElem.setAttribute('class', 'remoteVideo')
-      newElem.innerHTML = '<video id="' + remoteProducerId + '" autoplay class="video" ></video>'
+      newElem.innerHTML = '<video id="' + remoteProducerId + '" autoplay class="video" playsinline></video>'
     }
 
     videoContainer.appendChild(newElem)
