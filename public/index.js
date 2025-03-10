@@ -146,15 +146,8 @@ const getLocalStream = async () => {
     log("Error getLocalStream 2: " + error.message);
   }
 }
-// ...existing code...
 const streamSuccess = (stream) => {
-  const localVideo = document.getElementById('localVideo');
   localVideo.srcObject = stream;
-  localVideo.play().catch(error => {
-    console.error('Error playing local video:', error);
-    log('Error playing local video:', error);
-  });
-
   log("Stream: " + stream);
   log('Stream tracks: ' + stream.getTracks());
 
@@ -172,7 +165,6 @@ const streamSuccess = (stream) => {
 
   joinRoom();
 }
-// ...existing code...
 
 document.getElementById('btnLocalVideo').addEventListener('click', getLocalStream);
 
