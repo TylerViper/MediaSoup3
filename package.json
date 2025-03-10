@@ -12,11 +12,16 @@
     "watch": "watchify public/index.js -o public/bundle.js -v"
   },
   "dependencies": {
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "httpolyglot": "^0.1.2",
     "mediasoup": "^3.15.5",
     "mediasoup-client": "^3.9.1",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "watchify": "^4.0.0"
   }
 }

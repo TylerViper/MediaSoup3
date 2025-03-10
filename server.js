@@ -4,6 +4,8 @@
 
 /* Please follow mediasoup installation requirements */
 /* https://mediasoup.org/documentation/v3/mediasoup/installation/ */
+
+import 'dotenv/config';
 import express from 'express'
 const app = express()
 
@@ -31,11 +33,12 @@ const options = {
   cert: fs.readFileSync('./server/ssl/cert.pem', 'utf-8')
 }
 
-const httpsServer = https.createServer(options, app)
-httpsServer.listen(3000, () => {
-  console.log('listening on port: ' + 3000)
-})
+const port = process.env.PORT || 3000;
+const httpsServer = https.createServer(options, app);
 
+httpsServer.listen(port, '0.0.0.0', () => {
+  console.log(`Listening on port: ${port}`);
+});
 const io = new Server(httpsServer)
 
 // socket.io namespace (could represent a room?)
@@ -431,12 +434,18 @@ const createWebRtcTransport = async (router) => {
         listenIps: [
           {
             ip: '0.0.0.0', // replace with relevant IP address
-            announcedIp: '192.168.20.239',
+            //announcedIp: '192.168.20.239',
+            announcedIp: process.env.ANNOUNCEDIP,
+            //announcedIp: '113.160.225.76',
           }
         ],
         enableUdp: true,
         enableTcp: true,
         preferUdp: true,
+        // Add STUN/TURN servers
+        // iceServers: [
+        //   { urls: "stun:stun.l.google.com:19302" }
+        // ]
       }
 
       // https://mediasoup.org/documentation/v3/mediasoup/api/#router-createWebRtcTransport

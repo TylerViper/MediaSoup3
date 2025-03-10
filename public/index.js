@@ -83,82 +83,78 @@ const streamSuccess = (stream) => {
 
   joinRoom()
 }
-// const getLocalStream = async () => {
+
+const getLocalStream = async () => {
+  console.log("getLocalStream")
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    let rearCameraId = null;
+    let frontCameraId = null;
+
+    devices.forEach(device => {
+      if (device.kind === 'videoinput') {
+        if (device.label.toLowerCase().includes('back') || device.label.toLowerCase().includes('rear')) {
+          rearCameraId = device.deviceId;
+        } else if (device.label.toLowerCase().includes('front')) {
+          frontCameraId = device.deviceId;
+        }
+      }
+    });
+
+    let videoStream = null;
+
+    const isPhone = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    console.log("isPhone:")
+    console.log(isPhone)
+    console.log("rearCameraId:")
+    console.log(rearCameraId)
+    console.log("frontCameraId:")
+    console.log(frontCameraId)
+    console.log("======================")
+    if (isPhone && rearCameraId) {
+      videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { deviceId: rearCameraId },
+        audio: true
+      });
+    } else {
+      videoStream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          width: {
+            max: 1920,
+          },
+          height: {
+            max: 1080,
+          }
+        },
+        audio: false
+      });
+    }
+
+    streamSuccess(videoStream);
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
+// OG CODE WHICH WORKS
+// const getLocalStream = () => {
 //   console.log("getLocalStream")
-//   try {
-//     const devices = await navigator.mediaDevices.enumerateDevices();
-//     let rearCameraId = null;
-//     let frontCameraId = null;
-
-//     devices.forEach(device => {
-//       if (device.kind === 'videoinput') {
-//         if (device.label.toLowerCase().includes('back') || device.label.toLowerCase().includes('rear')) {
-//           rearCameraId = device.deviceId;
-//         } else if (device.label.toLowerCase().includes('front')) {
-//           frontCameraId = device.deviceId;
-//         }
+//   navigator.mediaDevices.getDisplayMedia({
+//     video: {
+//       width: {
+//         max: 1920,
+//       },
+//       height: {
+//         max: 1080,
 //       }
-//     });
-
-//     let videoStream = null;
-
-//     if (rearCameraId) {
-//       videoStream = await navigator.mediaDevices.getUserMedia({
-//         video: { deviceId: rearCameraId },
-//         audio: true
-//       });
-//     } else if (frontCameraId) {
-//       videoStream = await navigator.mediaDevices.getUserMedia({
-//         video: { deviceId: frontCameraId },
-//         audio: true
-//       });
-//     } else {
-//       const displayStream = await navigator.mediaDevices.getDisplayMedia({
-//         video: {
-//           width: {
-//             max: 1920,
-//           },
-//           height: {
-//             max: 1080,
-//           }
-//         },
-//         audio: false // Disable audio for display media
-//       });
-  
-//       const audioStream = await navigator.mediaDevices.getUserMedia({
-//         audio: true,
-//         video: false // Disable video for user media
-//       });
-  
-//       // Combine the display stream and audio stream
-//       videoStream = new MediaStream([
-//         ...displayStream.getVideoTracks(),
-//         ...audioStream.getAudioTracks()
-//       ]);
-//     }
-
-//     streamSuccess(videoStream);
-//   } catch (error) {
-//     console.log(error.message);
-//   }
+//     },
+//     audio: false
+//   }).then(streamSuccess).catch(error => {
+//     console.log(error.message)
+//   })
 // }
 
-const getLocalStream = () => {
-  console.log("getLocalStream")
-  navigator.mediaDevices.getDisplayMedia({
-    video: {
-      width: {
-        max: 1920,
-      },
-      height: {
-        max: 1080,
-      }
-    },
-    audio: false
-  }).then(streamSuccess).catch(error => {
-    console.log(error.message)
-  })
-}
 // A device is an endpoint connecting to a Router on the
 // server side to send/recive media
 const createDevice = async () => {
@@ -200,7 +196,12 @@ const createSendTransport = () => {
     // creates a new WebRTC Transport to send media
     // based on the server's producer transport params
     // https://mediasoup.org/documentation/v3/mediasoup-client/api/#TransportOptions
-    producerTransport = device.createSendTransport(params)
+    producerTransport = device.createSendTransport({
+      ...params,
+      // iceServers: [
+      //   { urls: "stun:stun.l.google.com:19302" }
+      // ]
+    })
 
     // https://mediasoup.org/documentation/v3/communication-between-client-and-server/#producing-media
     // this event is raised when a first call to transport.produce() is made
@@ -305,7 +306,13 @@ const signalNewConsumerTransport = async (remoteProducerId) => {
 
     let consumerTransport
     try {
-      consumerTransport = device.createRecvTransport(params)
+      consumerTransport = device.createRecvTransport({
+        ...params,
+        // iceServers: [
+        //   { urls: 'stun:stun.l.google.com:19302' },
+        //   { urls: 'turn:YOUR_TURN_SERVER', username: 'YOUR_USERNAME', credential: 'YOUR_CREDENTIAL' }
+        // ]
+      })
     } catch (error) {
       // exceptions: 
       // {InvalidStateError} if not loaded
