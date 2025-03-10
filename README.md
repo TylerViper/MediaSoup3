@@ -1,2 +1,7 @@
 openssl req -x509 -newkey rsa:2048 -keyout keytmp.pem -out cert.pem -days 365
 openssl rsa -in keytmp.pem -out key.pem
+
+Fix lỗi bên windows:
+    - không npm i mediasoup được
+    - run code bị lỗi tạo worker
+    Cách fix: Download and install Visual Studio Build Tools from [Microsoft’s official website](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
