@@ -5,6 +5,7 @@ const producerModule = require('./producer')
 const consumerModule = require('./consumer')
 
 const roomName = window.location.pathname.split('/')[2]
+console.log("roomName: ", roomName)
 
 const socket = io("/mediasoup")
 
