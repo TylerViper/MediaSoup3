@@ -19,7 +19,7 @@ let rtpCapabilities
 
 // A device is an endpoint connecting to a Router on the
 // server side to send/recive media
-const createDevice = async () => {
+const createDevice = async (isConsumeOnly = false) => {
   try {
     device = new mediasoupClient.Device()
 
@@ -37,6 +37,9 @@ const createDevice = async () => {
     producerModule.setDevice(device, rtpCapabilities)
     consumerModule.setDevice(device)
 
+    if(isConsumeOnly){
+      return producerModule.getProducersThenConsume(socket, log)
+    }
     // once the device loads, create transport
     const { transport } = await producerModule.createSendTransport(socket, log)
     
@@ -55,7 +58,7 @@ const createDevice = async () => {
   }
 }
 
-const joinRoom = () => {
+const joinRoom = (isConsumeOnly = false) => {
   socket.emit('joinRoom', { roomName }, (data) => {
     console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`)
     log(`Router RTP Capabilities... ${data.rtpCapabilities}`)
@@ -64,7 +67,7 @@ const joinRoom = () => {
     rtpCapabilities = data.rtpCapabilities
 
     // once we have rtpCapabilities from the Router, create Device
-    createDevice()
+    createDevice(isConsumeOnly)
   })
 }
 
@@ -181,4 +184,9 @@ socket.on('new-producer', ({ producerId }) => {
   consumerModule.signalNewConsumerTransport(socket, log, producerId, videoContainer);
 });
 
+const consumeOnly = () => {
+  return joinRoom(true);
+}
+
 document.getElementById('btnLocalVideo').addEventListener('click', getLocalStream);
+document.getElementById('btnConsumeOnly').addEventListener('click', consumeOnly);

@@ -123,7 +123,7 @@ const createSendTransport = (socket, log) => {
 
             // if producers exist, then join room
             if (producersExist) {
-              getProducers(socket, log);
+              getProducersThenConsume(socket, log);
               resolve({ producersExist: true });
             } else {
               resolve({ producersExist: false });
@@ -188,21 +188,7 @@ const getProducerInfo = () => {
 }
 
 // Hàm để lấy danh sách các producer
-// const getProducers = async (socket, log) => {
-//   const producerIds = await new Promise((resolve) => {
-//     socket.emit('getProducers', producerIds => {
-//       console.log(producerIds)
-//       log(producerIds)
-//       resolve(producerIds);
-//     })
-//   })
-
-//   producerIds.forEach(id => {
-//     consumerModule.signalNewConsumerTransport(socket, log, id, videoContainer);
-//   });
-// }
-
-const getProducers = (socket, log) => {
+const getProducersThenConsume = (socket, log) => {
   socket.emit('getProducers', producerIds => {
     console.log(producerIds)
     log(producerIds)
@@ -217,5 +203,6 @@ module.exports = {
   setMediaParams,
   createSendTransport,
   connectSendTransport,
-  getProducerInfo
+  getProducerInfo,
+  getProducersThenConsume
 }; 

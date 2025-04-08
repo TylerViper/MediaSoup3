@@ -21254,7 +21254,7 @@ let rtpCapabilities
 
 // A device is an endpoint connecting to a Router on the
 // server side to send/recive media
-const createDevice = async () => {
+const createDevice = async (isConsumeOnly = false) => {
   try {
     device = new mediasoupClient.Device()
 
@@ -21272,6 +21272,9 @@ const createDevice = async () => {
     producerModule.setDevice(device, rtpCapabilities)
     consumerModule.setDevice(device)
 
+    if(isConsumeOnly){
+      return producerModule.getProducersThenConsume(socket, log)
+    }
     // once the device loads, create transport
     const { transport } = await producerModule.createSendTransport(socket, log)
     
@@ -21290,7 +21293,7 @@ const createDevice = async () => {
   }
 }
 
-const joinRoom = () => {
+const joinRoom = (isConsumeOnly = false) => {
   socket.emit('joinRoom', { roomName }, (data) => {
     console.log(`Router RTP Capabilities... ${data.rtpCapabilities}`)
     log(`Router RTP Capabilities... ${data.rtpCapabilities}`)
@@ -21299,7 +21302,7 @@ const joinRoom = () => {
     rtpCapabilities = data.rtpCapabilities
 
     // once we have rtpCapabilities from the Router, create Device
-    createDevice()
+    createDevice(isConsumeOnly)
   })
 }
 
@@ -21416,7 +21419,12 @@ socket.on('new-producer', ({ producerId }) => {
   consumerModule.signalNewConsumerTransport(socket, log, producerId, videoContainer);
 });
 
+const consumeOnly = () => {
+  return joinRoom(true);
+}
+
 document.getElementById('btnLocalVideo').addEventListener('click', getLocalStream);
+document.getElementById('btnConsumeOnly').addEventListener('click', consumeOnly);
 },{"./consumer":96,"./producer":98,"mediasoup-client":65,"socket.io-client":81}],98:[function(require,module,exports){
 // producer.js
 const mediasoupClient = require('mediasoup-client')
@@ -21543,7 +21551,7 @@ const createSendTransport = (socket, log) => {
 
             // if producers exist, then join room
             if (producersExist) {
-              getProducers(socket, log);
+              getProducersThenConsume(socket, log);
               resolve({ producersExist: true });
             } else {
               resolve({ producersExist: false });
@@ -21608,21 +21616,7 @@ const getProducerInfo = () => {
 }
 
 // Hàm để lấy danh sách các producer
-// const getProducers = async (socket, log) => {
-//   const producerIds = await new Promise((resolve) => {
-//     socket.emit('getProducers', producerIds => {
-//       console.log(producerIds)
-//       log(producerIds)
-//       resolve(producerIds);
-//     })
-//   })
-
-//   producerIds.forEach(id => {
-//     consumerModule.signalNewConsumerTransport(socket, log, id, videoContainer);
-//   });
-// }
-
-const getProducers = (socket, log) => {
+const getProducersThenConsume = (socket, log) => {
   socket.emit('getProducers', producerIds => {
     console.log(producerIds)
     log(producerIds)
@@ -21637,6 +21631,7 @@ module.exports = {
   setMediaParams,
   createSendTransport,
   connectSendTransport,
-  getProducerInfo
+  getProducerInfo,
+  getProducersThenConsume
 }; 
 },{"./consumer":96,"mediasoup-client":65}]},{},[97]);
